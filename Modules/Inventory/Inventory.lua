@@ -1018,7 +1018,11 @@ function BUI.Inventory.Class:AddList(name, callbackParam, listClass, ...)
     return list
 end
 
-local function BUI_IsSlotLocked(inventorySlot)
+function BUI.Inventory.Class:BUI_IsSlotLocked(inventorySlot)
+    if (not inventorySlot) then
+	    return false
+	end
+	
     local slot = PLAYER_INVENTORY:SlotForInventoryControl(inventorySlot)
     if slot then
         return slot.locked
@@ -1132,18 +1136,30 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
         },
         {
             name = function()
-				local selectedData = self.categoryList.selectedData
+				if (self.selectedItemUniqueId ~= nil) then
+					local targetData = self.itemList:GetTargetData()
+					local bag, index = ZO_Inventory_GetBagAndIndex(targetData)
+					if (IsItemJunk(bag, index)) then
+						return GetString(SI_ITEM_ACTION_UNMARK_AS_JUNK)
+					end
+				end
+				
+				return GetString(SI_ITEM_ACTION_MARK_AS_JUNK)
 			
-				return (selectedData.filterType == ITEMFILTERTYPE_JUNK) and GetString(SI_ITEM_ACTION_UNMARK_AS_JUNK) or 
-						GetString(SI_ITEM_ACTION_MARK_AS_JUNK)
+				--local selectedData = self.categoryList.selectedData
+				--return (selectedData.filterType == ITEMFILTERTYPE_JUNK) and GetString(SI_ITEM_ACTION_UNMARK_AS_JUNK) or 
+				--		GetString(SI_ITEM_ACTION_MARK_AS_JUNK)
 			end,
             keybind = "UI_SHORTCUT_RIGHT_STICK",
             order = 2000,
             disabledDuringSceneHiding = true,
 
             visible = function()
-				local targetData = self.itemList:GetTargetData()
-				return (not BUI_IsSlotLocked(targetData))
+				if (self.selectedItemUniqueId ~= nil) then
+					local targetData = self.itemList:GetTargetData()
+					local bag, index = ZO_Inventory_GetBagAndIndex(targetData)
+					return (not IsItemPlayerLocked(bag, index) or IsItemJunk(bag, index))
+				end
 				----return (self.selectedItemUniqueId ~= nil)
                 --local targetData = self.itemList:GetTargetData()
 				--if (self.selectedItemUniqueId ~= nil) then 
@@ -1155,12 +1171,14 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
             end,
 
             callback = function()
-                local targetData = self.itemList:GetTargetData()
-				if(not BUI_IsSlotLocked(targetData)) then
+				if (self.selectedItemUniqueId ~= nil) then
+					local targetData = self.itemList:GetTargetData()
 					local bag, index = ZO_Inventory_GetBagAndIndex(targetData)
-					local isJunk = not IsItemJunk(bag, index) 
-                    SetItemIsJunk(bag, index, isJunk)
-                    PlaySound(isJunk and SOUNDS.INVENTORY_ITEM_JUNKED or SOUNDS.INVENTORY_ITEM_UNJUNKED)
+					local isJunk = not IsItemJunk(bag, index)
+					if (not IsItemPlayerLocked(bag, index) or (IsItemPlayerLocked(bag, index) and not isJunk)) then
+						SetItemIsJunk(bag, index, isJunk)
+						PlaySound(isJunk and SOUNDS.INVENTORY_ITEM_JUNKED or SOUNDS.INVENTORY_ITEM_UNJUNKED)
+					end
                 end
             end
         }
@@ -1215,7 +1233,7 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
                 --Also perform bag stack!
 				StackBag(BAG_BACKPACK)
 				--mark as junk
-				local targetData = self.itemList:GetTargetData()
+				local targetData = self.craftBagList:GetTargetData()
 				local itemLink
 				local bag, slot = ZO_Inventory_GetBagAndIndex(targetData)
 				if bag and slot then
