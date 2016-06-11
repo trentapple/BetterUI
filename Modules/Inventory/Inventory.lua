@@ -31,7 +31,6 @@ local PRIMARY_ACTION_KEY = 1
 -- All of the callbacks that are possible on the "A" button press have to have CallSecureProtected()
 local PRIMARY_ACTION = 1
 
-
 -- local function copied (and slightly edited for unequipped items!) from "inventoryutils_gamepad.lua"
 local function BUI_GetEquipSlotForEquipType(equipType)
     local equipSlot = nil
@@ -1019,6 +1018,13 @@ function BUI.Inventory.Class:AddList(name, callbackParam, listClass, ...)
     return list
 end
 
+local function BUI_IsSlotLocked(inventorySlot)
+    local slot = PLAYER_INVENTORY:SlotForInventoryControl(inventorySlot)
+    if slot then
+        return slot.locked
+    end
+end
+
 
 --------------
 -- Keybinds --
@@ -1096,31 +1102,65 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
 				end
             end,
 		},
+		--	name = GetString(SI_ITEM_ACTION_STACK_ALL),
+        --    keybind = "UI_SHORTCUT_LEFT_STICK",
+        --    order = 1500,
+        --    disabledDuringSceneHiding = true,
+        --    callback = function()
+        --        StackBag(BAG_BACKPACK)
+        --    end,
+        --},
         {
-            name = GetString(SI_ITEM_ACTION_STACK_ALL),
+            name = GetString(SI_ITEM_ACTION_LINK_TO_CHAT),
             keybind = "UI_SHORTCUT_LEFT_STICK",
             order = 1500,
             disabledDuringSceneHiding = true,
             callback = function()
-                StackBag(BAG_BACKPACK)
+                --Also perform bag stack!
+				StackBag(BAG_BACKPACK)
+				--link in chat
+				local targetData = self.itemList:GetTargetData()
+				local itemLink
+				local bag, slot = ZO_Inventory_GetBagAndIndex(targetData)
+				if bag and slot then
+					itemLink = GetItemLink(bag, slot)
+				end
+				if itemLink then
+					ZO_LinkHandler_InsertLink(zo_strformat(SI_TOOLTIP_ITEM_NAME, itemLink))
+				end
             end,
         },
         {
-            name = GetString(SI_ITEM_ACTION_DESTROY),
+            name = function()
+				local selectedData = self.categoryList.selectedData
+			
+				return (selectedData.filterType == ITEMFILTERTYPE_JUNK) and GetString(SI_ITEM_ACTION_UNMARK_AS_JUNK) or 
+						GetString(SI_ITEM_ACTION_MARK_AS_JUNK)
+			end,
             keybind = "UI_SHORTCUT_RIGHT_STICK",
             order = 2000,
             disabledDuringSceneHiding = true,
 
             visible = function()
-                local targetData = self.itemList:GetTargetData()
-                return self.selectedItemUniqueId ~= nil and ZO_InventorySlot_CanDestroyItem(targetData)
+				local targetData = self.itemList:GetTargetData()
+				return (not BUI_IsSlotLocked(targetData))
+				----return (self.selectedItemUniqueId ~= nil)
+                --local targetData = self.itemList:GetTargetData()
+				--if (self.selectedItemUniqueId ~= nil) then 
+				--local bag, index = ZO_Inventory_GetBagAndIndex(targetData)
+				--return not IsItemJunk(bag, index)
+                --return self.selectedItemUniqueId ~= nil and ZO_InventorySlot_CanDestroyItem(targetData)
+				--end
+				--return false
             end,
 
             callback = function()
                 local targetData = self.itemList:GetTargetData()
-                if(ZO_InventorySlot_CanDestroyItem(targetData) and ZO_InventorySlot_InitiateDestroyItem(targetData)) then
-                    self.itemList:Deactivate()
-                    self.listWaitingOnDestroyRequest = self.itemList
+				if(not BUI_IsSlotLocked(targetData)) then
+					local bag, index = ZO_Inventory_GetBagAndIndex(targetData)
+					local isJunk = not IsItemJunk(bag, index) 
+                    SetItemIsJunk(bag, index, isJunk)
+                    PlaySound(isJunk and SOUNDS.INVENTORY_ITEM_JUNKED or SOUNDS.INVENTORY_ITEM_UNJUNKED)
                 end
             end
         }
@@ -1166,6 +1206,57 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
                 self:ShowActions()
             end,
         },
+		        {
+            name = GetString(SI_ITEM_ACTION_LINK_TO_CHAT),
+            keybind = "UI_SHORTCUT_LEFT_STICK",
+            order = 1500,
+            disabledDuringSceneHiding = true,
+            callback = function()
+                --Also perform bag stack!
+				StackBag(BAG_BACKPACK)
+				--mark as junk
+				local targetData = self.itemList:GetTargetData()
+				local itemLink
+				local bag, slot = ZO_Inventory_GetBagAndIndex(targetData)
+				if bag and slot then
+					itemLink = GetItemLink(bag, slot)
+				end
+				if itemLink then
+					ZO_LinkHandler_InsertLink(zo_strformat(SI_TOOLTIP_ITEM_NAME, itemLink))
+				end
+            end,
+        },
+        --{
+        --    name = GetString(SI_ITEM_ACTION_MARK_AS_JUNK),
+        --    keybind = "UI_SHORTCUT_RIGHT_STICK",
+        --    order = 2000,
+        --    disabledDuringSceneHiding = true,
+        --
+        --    visible = function()
+        --        local targetData = self.itemList:GetTargetData()
+		--		if (self.selectedItemUniqueId ~= nil) then 
+		--		local bag, index = ZO_Inventory_GetBagAndIndex(targetData)
+		--		return not IsItemJunk(bag, index)
+        --        --return self.selectedItemUniqueId ~= nil and ZO_InventorySlot_CanDestroyItem(targetData)
+		--		end
+		--		return false
+        --    end,
+        --
+        --    callback = function()
+        --        local targetData = self.itemList:GetTargetData()
+		--		local bag, index = ZO_Inventory_GetBagAndIndex(targetData)
+		--		if(not IsItemJunk(bag, index)) then
+		--		 local isJunk = true --IsItemJunk(bag, index) 
+        --            SetItemIsJunk(bag, index, isJunk)
+        --            PlaySound(isJunk and SOUNDS.INVENTORY_ITEM_JUNKED or SOUNDS.INVENTORY_ITEM_UNJUNKED)
+        --        end
+		--		--if(not IsSlotLocked(index) and IsItemJunk(bag, index)) then
+		--		--local isJunk = false --IsItemJunk(bag, index)
+		--		--SetItemIsJunk(bag, index, isJunk)
+		--		--PlaySound(isJunk and SOUNDS.INVENTORY_ITEM_JUNKED or SOUNDS.INVENTORY_ITEM_UNJUNKED)
+        --        --end 
+        --    end
+        --}
     }
 
     ZO_Gamepad_AddBackNavigationKeybindDescriptors(self.craftBagKeybindStripDescriptor, GAME_NAVIGATION_TYPE_BUTTON)

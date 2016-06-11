@@ -2,6 +2,8 @@ local TEXTURE_EQUIP_ICON = "BetterUI/Modules/Inventory/Images/inv_equip.dds"
 local TEXTURE_EQUIP_BACKUP_ICON = "BetterUI/Modules/Inventory/Images/inv_equip_backup.dds"
 local TEXTURE_EQUIP_SLOT_ICON = "BetterUI/Modules/Inventory/Images/inv_equip_quickslot.dds"
 
+local NEW_ICON_TEXTURE = "EsoUI/Art/Inventory/newItem_icon.dds"
+
 local DEFAULT_GAMEPAD_ITEM_SORT =
 {
     bestGamepadItemCategoryName = { tiebreaker = "name" },
@@ -16,6 +18,27 @@ local DEFAULT_GAMEPAD_ITEM_SORT =
 function BUI_Inventory_DefaultItemSortComparator(left, right)
     return ZO_TableOrderingFunction(left, right, "bestGamepadItemCategoryName", DEFAULT_GAMEPAD_ITEM_SORT, ZO_SORT_ORDER_UP)
 end
+
+local function GetMarketPrice(itemLink, stackCount)
+    if(stackCount == nil) then stackCount = 1 end
+
+    if(BUI.Settings.Modules["GuildStore"].ddIntegration and ddDataDaedra ~= nil) then
+        local dData = ddDataDaedra:GetKeyedItem(itemLink)
+        if(dData ~= nil) then
+            if(dData.wAvg ~= nil) then
+                return dData.wAvg*stackCount
+            end
+        end
+    end
+    if (BUI.Settings.Modules["GuildStore"].mmIntegration and MasterMerchant ~= nil) then
+        local mmData = MasterMerchant:itemStats(itemLink, false)
+        if(mmData.avgPrice ~= nil) then
+            return mmData.avgPrice*stackCount
+        end
+    end
+    return 0
+end
+
 
 function BUI_SharedGamepadEntryLabelSetup(label, data, selected)
     if label then
