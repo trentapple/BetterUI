@@ -135,11 +135,16 @@ function BUI.Player.IsResearchable(itemLink)
 	traitIndex = BUI.Player.FindByTrait(craftType,rIndex,traitType)
 
 	if(traitIndex ~= -1) then
-		if (BUI.Player.ResearchTraits and BUI.Player.ResearchTraits[craftType] and BUI.Player.ResearchTraits[craftType][rIndex]) then
-			return not BUI.Player.ResearchTraits[craftType][rIndex][traitIndex]
-		else
-			return false
+		if BUI.Player.ResearchTraits[craftType] ~= nil then
+			if BUI.Player.ResearchTraits[craftType][rIndex] ~= nil then
+				if BUI.Player.ResearchTraits[craftType][rIndex][traitIndex] ~= nil then
+					return not BUI.Player.ResearchTraits[craftType][rIndex][traitIndex]
+				end
+			end
 		end
+		
+		return false
+		
 	else
 		return false
 	end
