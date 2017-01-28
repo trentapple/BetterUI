@@ -1190,7 +1190,8 @@ function BUI.Inventory.Class:OnDeferredInitialize()
         self:MarkDirty()
         local currentList = self:GetCurrentList()
         self:RefreshHeader(BLOCK_TABBAR_CALLBACK)
-        if ZO_Dialogs_IsShowing(ZO_GAMEPAD_INVENTORY_ACTION_DIALOG) then
+		BUI.GenericFooter.Refresh(self)
+		if ZO_Dialogs_IsShowing(ZO_GAMEPAD_INVENTORY_ACTION_DIALOG) then
             self:OnUpdate() --don't wait for next update loop in case item was destroyed and scene/keybinds need immediate update
         else
             if currentList == self.categoryList then
