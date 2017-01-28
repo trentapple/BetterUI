@@ -344,6 +344,8 @@ function BUI.Banking.Class:MoveItem(list, quantity)
     	CallSecureProtected("RequestMoveItem", fromBag, index, toBag, nextSlot, quantity)
         self:UpdateSpinnerConfirmation(false, self.list)
 	end
+	
+	zo_callLater(function() self:RefreshFooter() end, 100);
 end
 
 function BUI.Banking.Class:CancelWithdrawDeposit(list)
@@ -486,6 +488,7 @@ function BUI.Banking.Class:InitializeKeybind()
                     callback = function()
                         self:SaveListPosition()
                         self:MoveItem(self.list)
+						self:RefreshFooter()
                         --self:RefreshList()
                     end,
                     visible = function()
