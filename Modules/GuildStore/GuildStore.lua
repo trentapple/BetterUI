@@ -287,6 +287,14 @@ end
 function BUI.GuildStore.HookResultsKeybinds()
 	if BUI.Settings.Modules["GuildStore"].flipGSbuttons then
 		BUI.Hook(GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS, "InitializeKeybindStripDescriptors", function(self)
+			--GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.initialSortKey = ZO_GamepadTradingHouse_SortableItemList.SORT_KEY_TIME
+			
+			--GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.InitializeSortOptions = BUI.GuildStore.BrowseResults.InitializeSortOptions
+		
+			--self.currentTimePriceKey = ZO_GamepadTradingHouse_SortableItemList.SORT_KEY_TIME
+			--self.toggleTimePriceKey = ZO_GamepadTradingHouse_SortableItemList.SORT_KEY_PRICE
+			--self:SetSortOptions(tradingHouseSortOptions)
+			
 			local function NotAwaitingResponse()
 				return not self.awaitingResponse
 			end
@@ -820,6 +828,12 @@ function BUI.GuildStore.Browse:ResetList(filters, dontReselect)
     self.itemList:Commit(dontReselect)
 end
 
+function BUI.GuildStore.BrowseResults:InitializeSortOptions()
+	self.currentTimePriceKey = ZO_GamepadTradingHouse_SortableItemList.SORT_KEY_TIME
+	self.toggleTimePriceKey = ZO_GamepadTradingHouse_SortableItemList.SORT_KEY_PRICE
+	self:SetSortOptions(SORT_OPTIONS)
+end
+
 function BUI.GuildStore.BrowseResults.Setup()
 	if (BUI.Settings.Modules["GuildStore"].useShortFormat ~= nil) then
 		USE_SHORT_CURRENCY_FORMAT = BUI.Settings.Modules["GuildStore"].useShortFormat
@@ -853,6 +867,7 @@ function BUI.GuildStore.BrowseResults.Setup()
 	GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.InitializeList = BUI.GuildStore.BrowseResults.InitializeList
 	GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.RefreshFooter = BUI.GuildStore.BrowseResults.RefreshFooter
 	GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.InitializeFooter = BUI.GuildStore.BrowseResults.InitializeFooter
+	GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.InitializeSortOptions = BUI.GuildStore.BrowseResults.InitializeSortOptions
 	--GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.Initialize = BUI.GuildStore.BrowseResults.Initialize
 	
 	--EVENT_MANAGER:RegisterForEvent("BUI_OnSearchResultsReceived",
@@ -861,6 +876,8 @@ function BUI.GuildStore.BrowseResults.Setup()
 
 	GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS:InitializeList()
 	GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS:InitializeFooter()
+	--GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.initialSortKey = ZO_GamepadTradingHouse_SortableItemList.SORT_KEY_TIME
+	GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS:InitializeSortOptions()
 	--GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS:PopulateTabList()
 
 	-- Now we have to hide the header in this new guild store interface
@@ -882,6 +899,10 @@ function BUI.GuildStore.BrowseResults.Setup()
 
 	GAMEPAD_TRADING_HOUSE_BROWSE.OnShowing = function(self)
 		self:PerformDeferredInitialization()
+		
+		TRADING_HOUSE_GAMEPAD.m_search.m_sortField = TRADING_HOUSE_SORT_EXPIRY_TIME
+		TRADING_HOUSE_GAMEPAD.m_search.m_sortOrder = ZO_SORT_ORDER_DOWN
+	
     	self:OnTargetChanged(self.itemList, self.itemList:GetTargetData())
 
 		TRADING_HOUSE_GAMEPAD.m_header:SetHidden(false) -- here's the change
