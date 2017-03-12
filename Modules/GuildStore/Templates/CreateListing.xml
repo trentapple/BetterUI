@@ -19,7 +19,7 @@
                                         <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="520" />
                                         <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
                                  </Label>
-                                 <Label name="$(parent)Column4Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="Est. Value">
+                                 <Label name="$(parent)Column4Label" inherits="BUI_GamepadScreenColumnBarTextTemplate" text="#/D">
                                         <Anchor point="LEFT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMLEFT" offsetX="665" />
                                         <Anchor point="RIGHT" relativeTo="$(parent)TabBar" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="95" />
                                  </Label>

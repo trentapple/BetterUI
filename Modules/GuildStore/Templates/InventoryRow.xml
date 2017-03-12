@@ -86,7 +86,7 @@
                 <Label name="$(parent)ItemType" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text=" " font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
                     <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="490"/>
                 </Label>
-               <Label name="$(parent)BuyingAdvice" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="0.00%" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
+               <Label name="$(parent)BuyingAdvice" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="-" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">
                     <Anchor point="TOPLEFT" relativeTo="$(parent)Label" offsetX="650"/>
                 </Label>
                 <Label name="$(parent)Price" inherits="BUI_GamepadSubMenuEntryLabelTemplate" text="0" font="$(GAMEPAD_MEDIUM_FONT)|28|soft-shadow-thick" override="true" verticalAlignment="CENTER" horizontalAlignment="LEFT" excludeFromResizeToFitExtents="true">

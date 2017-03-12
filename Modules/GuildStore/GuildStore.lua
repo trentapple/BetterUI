@@ -639,18 +639,13 @@ local function SetupSellListing(control, data, selected, selectedDuringRebuild, 
     local bagId = dS.bagId
     local slotIndex = dS.slotIndex
     local itemData = GetItemLink(data.dataSource.searchData.bagId, data.dataSource.searchData.slotIndex)
-
-
-	if(ddDataDaedra ~= nil and BUI.Settings.Modules["GuildStore"].ddIntegration) then
-		local wAvg = ddDataDaedra:GetKeyedItem(itemData)
-		if(wAvg ~= nil) then
-			if(wAvg.wAvg ~= nil) then
-				buyingAdviceControl:SetText(zo_strformat("<<1>>",wAvg.wAvg*data.stackCount))
-			else
-				buyingAdviceControl:SetText("0")
-			end
+	
+	if (BUI.Settings.Modules["GuildStore"].mmIntegration and MasterMerchant ~= nil) then
+		local mmData = MasterMerchant:itemStats(itemData, false)
+		if (mmData ~= nil and mmData.numSales ~= nil and mmData.numDays ~= nil) then
+			buyingAdviceControl:SetText(zo_strformat("<<1>>/<<2>>d", mmData.numSales, mmData.numDays))
 		else
-			buyingAdviceControl:SetText("0")
+			buyingAdviceControl:SetText("-")
 		end
 	end
 end
