@@ -45,7 +45,7 @@ local SORT_OPTIONS = {
     [ZO_GamepadTradingHouse_SortableItemList.SORT_KEY_PRICE] = TRADING_HOUSE_SORT_SALE_PRICE,
 }
 
-local GUILDSTORE_LEFT_TOOL_TIP_REFRESH_DELAY_MS = 300
+local GUILDSTORE_LEFT_TOOL_TIP_REFRESH_DELAY_MS = 200
 
 local USE_SHORT_CURRENCY_FORMAT = true
 
@@ -349,6 +349,22 @@ function BUI.GuildStore.HookResultsKeybinds()
 					enabled = HasNoCoolDownAndNotAwaitingResponse
 				},
 				{
+					name = function()
+						return GetString(SI_ITEM_ACTION_LINK_TO_CHAT)
+					end,
+					keybind = "UI_SHORTCUT_LEFT_STICK",
+					alignment = KEYBIND_STRIP_ALIGN_LEFT,
+					callback = function()
+						local postedData = self:GetList():GetTargetData()
+						local itemLink = GetTradingHouseSearchResultItemLink(postedData.slotIndex)
+						
+						if itemLink then
+							ZO_LinkHandler_InsertLink(zo_strformat(SI_TOOLTIP_ITEM_NAME, itemLink))
+						end
+					end,
+					enabled = HasNoCoolDownAndNotAwaitingResponse
+				},
+				{
 					keybind = "UI_SHORTCUT_LEFT_TRIGGER",
 					ethereal = true,
 					callback = function()
@@ -612,28 +628,28 @@ local function SetupSellListing(control, data, selected, selectedDuringRebuild, 
 	    local labelTxt = control.label:GetText()
 	    control.label:SetText(zo_strformat("<<1>> |cFFFFFF(<<2>>)|r",labelTxt,data.stackCount))
 	end
-	
-
 
     -- control:GetNamedChild("Price"):SetText(data.stackSellPrice)
 	-- Replace the "Value" with the market price of the item (in yellow)
+	local itemTypeControl = control:GetNamedChild("ItemType")
+	local priceControl = control:GetNamedChild("Price")
+	local buyingAdviceControl = control:GetNamedChild("BuyingAdvice")
+	
+	itemTypeControl:SetText(string.upper(data.dataSource.bestGamepadItemCategoryName))
+
     if(BUI.Settings.Modules["Inventory"].showMarketPrice) then
         local marketPrice = GetMarketPrice(GetItemLink(data.dataSource.searchData.bagId, data.dataSource.searchData.slotIndex), data.stackCount)
         if(marketPrice ~= 0) then
-            control:GetNamedChild("Price"):SetColor(1,0.75,0,1)
-            control:GetNamedChild("Price"):SetText(ZO_CurrencyControl_FormatCurrency(math.floor(marketPrice), USE_SHORT_CURRENCY_FORMAT))
+			priceControl:SetColor(1,0.75,0,1)
+            priceControl:SetText(ZO_CurrencyControl_FormatCurrency(math.floor(marketPrice), USE_SHORT_CURRENCY_FORMAT))
         else
-            control:GetNamedChild("Price"):SetColor(1,1,1,1)
-    		control:GetNamedChild("Price"):SetText(data.stackSellPrice)
+            priceControl:SetColor(1,1,1,0.5)
+    		priceControl:SetText(data.stackSellPrice)
         end
     else
-        control:GetNamedChild("Price"):SetColor(1,1,1,1)
-        control:GetNamedChild("Price"):SetText(ZO_CurrencyControl_FormatCurrency(data.stackSellPrice, USE_SHORT_CURRENCY_FORMAT))
+        priceControl:SetColor(1,1,1,1)
+        priceControl:SetText(ZO_CurrencyControl_FormatCurrency(data.stackSellPrice, USE_SHORT_CURRENCY_FORMAT))
     end
-
-    control:GetNamedChild("ItemType"):SetText(string.upper(data.dataSource.bestGamepadItemCategoryName))
-
-    local buyingAdviceControl = control:GetNamedChild("BuyingAdvice")
 
 	local dS = data.dataSource.searchData
     local bagId = dS.bagId
@@ -643,9 +659,12 @@ local function SetupSellListing(control, data, selected, selectedDuringRebuild, 
 	if (BUI.Settings.Modules["GuildStore"].mmIntegration and MasterMerchant ~= nil) then
 		local mmData = MasterMerchant:itemStats(itemData, false)
 		if (mmData ~= nil and mmData.numSales ~= nil and mmData.numDays ~= nil) then
+			--buyingAdviceControl:SetColor(1,0.75,0,1)
+			buyingAdviceControl:SetColor(1,1,1,1)
 			buyingAdviceControl:SetText(zo_strformat("<<1>>/<<2>>d", mmData.numSales, mmData.numDays))
 		else
-			buyingAdviceControl:SetText("-")
+			buyingAdviceControl:SetColor(1,1,1,0.5)
+			buyingAdviceControl:SetText("-/-")
 		end
 	end
 end
@@ -667,8 +686,7 @@ function BUI.GuildStore.Sell:InitializeList()
     local LISTINGS_ITEM_HEIGHT = 30
 
     self.messageControl = self.control:GetNamedChild("StatusMessage")
-    self.itemList = BUI_GamepadInventoryList:New(self.listControl, BAG_BACKPACK, SLOT_TYPE_ITEM, OnSelectionChanged, ENTRY_SETUP_CALLBACK,
-                                                    CATEGORIZATION_FUNCTION, SORT_FUNCTION, USE_TRIGGERS, "BUI_Sell_Row", SetupSellListing)
+    self.itemList = BUI_GamepadInventoryList:New(self.listControl, BAG_BACKPACK, SLOT_TYPE_ITEM, OnSelectionChanged, ENTRY_SETUP_CALLBACK, CATEGORIZATION_FUNCTION, SORT_FUNCTION, USE_TRIGGERS, "BUI_Sell_Row", SetupSellListing)
     self.itemList:SetItemFilterFunction(function(slot) local isBound = IsItemBound(slot.bagId, slot.slotIndex)
                                                     return slot.quality ~= ITEM_QUALITY_TRASH and not slot.stolen and not isBound end)
 
