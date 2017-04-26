@@ -49,6 +49,8 @@ local GUILDSTORE_LEFT_TOOL_TIP_REFRESH_DELAY_MS = 200
 
 local USE_SHORT_CURRENCY_FORMAT = true
 
+local PREVIEW = LibStub("LibPreview")
+
 -- We need to take a subclass of ZO_GamepadInventoryList to alter the "Sell" page's gradient fade background
 BUI_GamepadInventoryList = ZO_GamepadInventoryList:Subclass()
 
@@ -283,6 +285,14 @@ function BUI.GuildStore.FixMM()
   	BUI.MMIntegration = true
 end
 
+local isFraming = false
+ZO_PreHook("SetFrameLocalPlayerInGameCamera", function(value)
+	isFraming = value
+end)
+
+-- dummy frame fragment which doesn't do anything. this is used if there is already a frame fragment active
+local NO_TARGET_CHANGE_FRAME = ZO_SceneFragment:New()
+
 -- Flip A (Sort) and X (Select)
 function BUI.GuildStore.HookResultsKeybinds()
 	if BUI.Settings.Modules["GuildStore"].flipGSbuttons then
@@ -335,6 +345,67 @@ function BUI.GuildStore.HookResultsKeybinds()
 						return GetSelectedTradingHouseGuildId() ~= nil and GetNumTradingHouseGuilds() > 1
 					end,
 					enabled = HasNoCoolDownAndNotAwaitingResponse
+				},
+				{
+					name = GetString(SI_CRAFTING_ENTER_PREVIEW_MODE),
+					keybind = "UI_SHORTCUT_QUATERNARY",
+					alignment = KEYBIND_STRIP_ALIGN_LEFT,
+					callback = function()
+						local postedData = self:GetList():GetTargetData()
+						local itemLink = GetTradingHouseSearchResultItemLink(postedData.slotIndex)
+						
+						if itemLink then
+							--[[if (FurPreview ~= nil) then
+								FurPreview:Preview(postedData, itemLink, postedData.slotType)
+							end]]--
+							if SYSTEMS:IsShowing(ZO_TRADING_HOUSE_SYSTEM_NAME) or SYSTEMS:IsShowing("trade") then
+								PREVIEW:EnablePreviewMode(FRAME_TARGET_GAMEPAD_RIGHT_FRAGMENT)
+							elseif isFraming then
+								-- if there is already a frame fragment active, use the dummy one
+								PREVIEW:EnablePreviewMode(NO_TARGET_CHANGE_FRAME)
+							else
+								PREVIEW:EnablePreviewMode()
+							end
+							
+							-- check if this is a recipe and preview the crafting result instead
+							local resultItemLink = GetItemLinkRecipeResultItemLink(itemLink)
+							if(resultItemLink ~= "") then
+								local _, _, _, itemId = ZO_LinkHandler_ParseLink( resultItemLink )
+								PREVIEW:PreviewItem(tonumber(itemId))
+								return
+							end
+							
+							local _, _, _, itemId = ZO_LinkHandler_ParseLink( itemLink )
+							PREVIEW:PreviewItem(tonumber(itemId))
+							
+							--ZO_LinkHandler_InsertLink(zo_strformat(SI_TOOLTIP_ITEM_NAME, itemLink))
+						end
+					end,
+					ethereal = true,
+					enabled = HasNoCoolDownAndNotAwaitingResponse,
+					--[[visible = function()
+						--if not HasNoCoolDownAndNotAwaitingResponse() then
+						--end
+						
+						local postedData = self:GetList():GetTargetData()
+						if postedData ~= nil and postedData.slotIndex ~= nil then
+							local itemLink = GetTradingHouseSearchResultItemLink(postedData.slotIndex)
+							
+							if itemLink then
+								local resultItemLink = GetItemLinkRecipeResultItemLink(itemLink)
+								if(resultItemLink ~= "") then
+									local _, _, _, itemId = ZO_LinkHandler_ParseLink( resultItemLink )
+									return PREVIEW:CanPreviewItem(tonumber(itemId))
+								end
+								
+								local _, _, _, itemId = ZO_LinkHandler_ParseLink( itemLink )
+								return PREVIEW:CanPreviewItem(tonumber(itemId))
+							end
+						end
+						
+						return false
+					end]]
+					
 				},
 				{
 					name = function()
@@ -904,7 +975,7 @@ function BUI.GuildStore.BrowseResults.Setup()
         GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.textFilter = string.lower(self.nameFilter)
 		TRADING_HOUSE_GAMEPAD.m_header:SetHidden(true) -- here's the change
 		BUI.CIM.SetTooltipWidth(BUI_GAMEPAD_DEFAULT_PANEL_WIDTH)
-
+	
         if wykkydsToolbar then
             wykkydsToolbar:SetHidden(false)
 		end
@@ -941,6 +1012,11 @@ function BUI.GuildStore.BrowseResults.Setup()
     end
 
     GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.OnHiding = function(self)
+		if (IsCurrentlyPreviewing()) then
+			--PREVIEW:DisablePreviewMode()
+			SYSTEMS:GetObject("itemPreview"):EndCurrentPreview()
+		end
+		
 	    if wykkydsToolbar then
             wykkydsToolbar:SetHidden(false)
         end
@@ -971,7 +1047,7 @@ function BUI.GuildStore.BrowseResults.Setup()
                --self.m_header:SetHidden(true)
             self:RefreshHeaderData()
             self:RegisterForSceneEvents()
-
+		
             if wykkydsToolbar then
                 wykkydsToolbar:SetHidden(true)
             end

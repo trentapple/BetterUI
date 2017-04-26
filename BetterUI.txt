@@ -1,10 +1,9 @@
 ## Title: BetterUI
 ## Description: Makes the gamepad interface usable!
-## APIVersion: 100017 100018
+## APIVersion: 100018
 ## Author: |c0066FFprasoc|r [EU]
-## Version: 2.30
-## DependsOn:
-## OptionalDependsOn: LibAddonMenu-2.0
+## Version: 2.32
+## OptionalDependsOn: LibAddonMenu-2.0 MasterMerchant WritWorthy
 ## SavedVariables: BetterUISavedVars
 
 lib\LibStub\LibStub.lua
@@ -22,6 +21,8 @@ lib\LibAddonMenu-2.0\controls\header.lua
 lib\LibAddonMenu-2.0\controls\slider.lua
 lib\LibAddonMenu-2.0\controls\texture.lua
 lib\LibAddonMenu-2.0\controls\iconpicker.lua
+lib\LibPreview\LibPreview.lua
+lib\LibPreview\PreviewData.lua
 Globals.lua
 
 lang\en.lua

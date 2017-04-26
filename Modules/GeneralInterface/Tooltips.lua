@@ -1,14 +1,55 @@
 local _
+local WritWorthy = _G['WritWorthy'] -- defined in WritWorthy_Define.lua
 
 local function AddInventoryPostInfo(tooltip, itemLink)
 	if itemLink then --and itemLink ~= tooltip.lastItemLink then
+		-- item is recipe
+		--[[if GetItemLinkItemType(itemLink) == ITEMTYPE_RECIPE then
+			if SousChef ~= nil then
+				local u = SousChef.Utility
+				
+				--ZO_Tooltip_AddDivider(tooltip)
+				local resultLink = GetItemLinkRecipeResultItemLink(itemLink)
+				
+				-- $$$ SirAndy: Fixed API version 15 switch to Champion Points
+				-- -- local level = GetLevelOrVeteranRankString(GetItemLinkRequiredLevel(resultLink), GetItemLinkRequiredVeteranRank(resultLink), 20)
+				--local level = GetLevelOrChampionPointsString(GetItemLinkRequiredLevel(resultLink), GetItemLinkRequiredChampionPoints(resultLink), 20)
+				
+				--tooltip:AddLine(zo_strformat("Creates a Level <<1>> <<t:2>>", level, GetItemLinkName(resultLink)), "ZoFontWinH5", 1, 1, 1, BOTTOM)
+				if SousChef.settings.showAltKnowledge then
+					local knownBy = SousChef.settings.Cookbook[u.CleanString(GetItemLinkName(resultLink))]
+					if knownBy then
+						topSection:AddLine(zo_strformat("|t32:32:esoui/art/treeicons/gamepad/achievement_categoryicon_summary.dds|t <<1>>", u.TableKeyConcat(knownBy)), { fontSize = 30, fontColorField = GAMEPAD_TOOLTIP_COLOR_ABILITY_UPGRADE, uppercase = false, }, tooltip:GetStyle("bodySection"))
+						--tooltip:AddLine(u.TableKeyConcat(knownBy), { fontSize = 30, fontColorField = GAMEPAD_TOOLTIP_COLOR_ABILITY_UPGRADE, uppercase = false }, tooltip:GetStyle("title"))
+					end
+				end
+			end
+		end]]--
+		
+		if WritWorthy ~= nil and ITEMTYPE_MASTER_WRIT == GetItemLinkItemType(itemLink) then
+			--WritWorthy.TooltipInsertOurText(tooltip, itemLink, nil)
+			local mat_list, know_list = WritWorthy.ToMatKnowList(itemLink)
+			local voucher_ct = WritWorthy.ToVoucherCount(itemLink)
+			local mat_text = WritWorthy.MatTooltipText(mat_list, nil, voucher_ct)
+			if not mat_text then return end
+			tooltip:AddLine(mat_text, { fontSize = 28, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("bodySection"))
+			if WritWorthy.savedVariables.enable_mat_list_chat then
+				WritWorthy.MatRow.ListDump(mat_list)
+				--WritWorthy.KnowDump(know_list)
+			end
+			local know_text = WritWorthy.KnowTooltipText(know_list)
+			if know_text then
+				tooltip:AddLine(know_text, { fontSize = 28 }, tooltip:GetStyle("bodySection"))
+			end
+		end
+	
 		--tooltip.lastItemLink = itemLink
 		if MasterMerchant ~= nil and BUI.Settings.Modules["GuildStore"].mmIntegration then
 			local tipLine, avePrice, graphInfo = MasterMerchant:itemPriceTip(itemLink, false, clickable)
 			if(tipLine ~= nil) then
-				tooltip:AddLine(zo_strformat("|c0066ff[BUI]|r <<1>>",tipLine), { fontSize = 28, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("bodySection"))
+				tooltip:AddLine(zo_strformat("<<1>>", tipLine), { fontSize = 28, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("bodySection"))
 			else
-				tooltip:AddLine(zo_strformat("|c0066ff[BUI]|r MM price (0 sales, 0 days): UNKNOWN"), { fontSize = 28, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("bodySection"))
+				tooltip:AddLine(zo_strformat("MM price (0 sales, 0 days): <<1>>", ZO_DISABLED_TEXT:Colorize("UNKNOWN")), { fontSize = 28, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("bodySection"))
 			end
 		end
 
@@ -21,7 +62,7 @@ local function AddInventoryPostInfo(tooltip, itemLink)
                     tooltip:AddLine(zo_strformat("|c0066ff[BUI]|r <<1>>",tipLine), { fontSize = 28, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("bodySection"))
                 end
             end
-        end
+		end
 	end
 end
 
@@ -29,7 +70,7 @@ end
 local function AddInventoryPreInfo(tooltip, itemLink)
     local style = GetItemLinkItemStyle(itemLink)
     local itemStyle = string.upper(GetString("SI_ITEMSTYLE", style))
-
+	
     if itemLink and BUI.Settings.Modules["Tooltips"].showStyleTrait then
         local traitType, traitDescription, traitSubtype, traitSubtypeName, traitSubtypeDescription = GetItemLinkTraitInfo(itemLink)
 
@@ -51,7 +92,39 @@ local function AddInventoryPreInfo(tooltip, itemLink)
                 tooltip:AddLine(zo_strformat("<<1>>", itemStyle), { fontSize = 30, fontColorField = GAMEPAD_TOOLTIP_COLOR_GENERAL_COLOR_1 }, tooltip:GetStyle("title"))
             end
         end
-    end
+	end
+	
+	if itemLink then
+		if GetItemLinkItemType(itemLink) == ITEMTYPE_RECIPE then
+			if SousChef ~= nil then
+				local u = SousChef.Utility
+				
+				--ZO_Tooltip_AddDivider(tooltip)
+				local resultLink = GetItemLinkRecipeResultItemLink(itemLink)
+				
+				-- $$$ SirAndy: Fixed API version 15 switch to Champion Points
+				-- -- local level = GetLevelOrVeteranRankString(GetItemLinkRequiredLevel(resultLink), GetItemLinkRequiredVeteranRank(resultLink), 20)
+				--local level = GetLevelOrChampionPointsString(GetItemLinkRequiredLevel(resultLink), GetItemLinkRequiredChampionPoints(resultLink), 20)
+				
+				--tooltip:AddLine(zo_strformat("Creates a Level <<1>> <<t:2>>", level, GetItemLinkName(resultLink)), "ZoFontWinH5", 1, 1, 1, BOTTOM)
+				if SousChef.settings.showAltKnowledge then
+					local knownBy = SousChef.settings.Cookbook[u.CleanString(GetItemLinkName(resultLink))]
+					if knownBy then
+						local knownByColorType = GAMEPAD_TOOLTIP_COLOR_ABILITY_UPGRADE
+						
+						if IsItemLinkRecipeKnown(itemLink) then
+							knownByColorType = GAMEPAD_TOOLTIP_COLOR_INACTIVE
+						end
+						
+						tooltip:AddLine(zo_strformat("|t32:32:esoui/art/treeicons/gamepad/achievement_categoryicon_summary.dds:inheritcolor|t <<1>>", u.TableKeyConcat(knownBy)), { fontSize = 30, fontColorField = knownByColorType, uppercase = false, }, tooltip:GetStyle("title"))
+						--tooltip:AddLine(u.TableKeyConcat(knownBy), { fontSize = 30, fontColorField = GAMEPAD_TOOLTIP_COLOR_ABILITY_UPGRADE, uppercase = false }, tooltip:GetStyle("bodySection"))
+					else
+						tooltip:AddLine(zo_strformat("|t32:32:esoui/art/treeicons/gamepad/achievement_categoryicon_summary.dds:inheritcolor|t  <<1>>", ZO_DISABLED_TEXT:Colorize("UNKNOWN")), { fontSize = 30, fontColorField = GAMEPAD_TOOLTIP_COLOR_ABILITY_UPGRADE }, tooltip:GetStyle("title"))
+					end
+				end
+			end
+		end
+	end
 end
 
 function BUI.InventoryHook(tooltipControl, method, linkFunc)

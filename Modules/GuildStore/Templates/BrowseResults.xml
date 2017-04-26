@@ -192,7 +192,8 @@
                             <Dimensions x="195" y="30"/>
                             <Anchor point="TOP"/>
                             <OnInitialized>
-                                ZO_SortableParametricList_InitSortHeader(self, SI_TRADING_HOUSE_SORT_TYPE_PRICE, TEXT_ALIGN_CENTER, ZO_GamepadTradingHouse_SortableItemList.SORT_KEY_PRICE)
+	                            ZO_SortableParametricList_InitSortHeader(self, SI_TRADING_HOUSE_SORT_TYPE_TIME, TEXT_ALIGN_CENTER, ZO_GamepadTradingHouse_SortableItemList.SORT_KEY_TIME)
+                                --ZO_SortableParametricList_InitSortHeader(self, SI_TRADING_HOUSE_SORT_TYPE_PRICE, TEXT_ALIGN_CENTER, ZO_GamepadTradingHouse_SortableItemList.SORT_KEY_PRICE)
                             </OnInitialized>
                         </Control>
                     </Controls>
