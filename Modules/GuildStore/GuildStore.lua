@@ -369,6 +369,8 @@ function BUI.GuildStore.HookResultsKeybinds()
 							--	return
 							--end
 							--SetInteractionUsingInteractCamera(false)
+							
+							GAMEPAD_TOOLTIPS:Reset(GAMEPAD_LEFT_TOOLTIP)
 						
 							if SYSTEMS:IsShowing(ZO_TRADING_HOUSE_SYSTEM_NAME) or SYSTEMS:IsShowing("trade") then
 								--PREVIEW:EnablePreviewMode(FRAME_TARGET_GAMEPAD_RIGHT_FRAGMENT)
