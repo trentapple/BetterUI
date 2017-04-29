@@ -1140,8 +1140,8 @@ function BUI.Inventory.Class:OnDeferredInitialize()
     }
     self.savedVars = ZO_SavedVars:NewAccountWide("ZO_Ingame_SavedVariables", 2, "GamepadInventory", SAVED_VAR_DEFAULTS)
 
-    self:SetListsUseTriggerKeybinds(true)
-
+    self:SetListsUseTriggerKeybinds((BUI.Settings.Modules["CIM"].triggerSpeed == 0))
+	
     self.categoryPositions = {}
 	self.categoryCraftPositions = {}
     self.populatedCategoryPos = false
@@ -1409,6 +1409,30 @@ local function IsInventorySlotLockedOrJunk(targetData)
 	return (not IsItemPlayerLocked(bag, index) or IsItemJunk(bag, index))
 end
 
+function BUI.Inventory.Class:CreateListTriggerKeybindDescriptors(list)
+	local leftTrigger = {
+		keybind = "UI_SHORTCUT_LEFT_TRIGGER",
+		ethereal = true,
+		callback = function()
+			--local list = self.list
+			--if not list:IsEmpty() then
+				list:SetSelectedIndex(list.selectedIndex-tonumber(BUI.Settings.Modules["CIM"].triggerSpeed))
+			--end
+		end
+	}
+	local rightTrigger = {
+		keybind = "UI_SHORTCUT_RIGHT_TRIGGER",
+		ethereal = true,
+		callback = function()
+			--local list = self.list
+			--if not list:IsEmpty() then
+				list:SetSelectedIndex(list.selectedIndex+tonumber(BUI.Settings.Modules["CIM"].triggerSpeed))
+			--end
+		end,
+	}
+	return leftTrigger, rightTrigger
+end
+
 function BUI.Inventory.Class:InitializeKeybindStrip()
     self.categoryListKeybindStripDescriptor =
     {
@@ -1486,6 +1510,7 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
 				end
             end,
 		},
+	 
 		----	name = GetString(SI_ITEM_ACTION_STACK_ALL),
         ----    keybind = "UI_SHORTCUT_LEFT_STICK",
         ----    order = 1500,
@@ -1580,6 +1605,12 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
     }
 
     ZO_Gamepad_AddBackNavigationKeybindDescriptors(self.itemFilterKeybindStripDescriptor, GAME_NAVIGATION_TYPE_BUTTON)
+	
+	if BUI.Settings.Modules["CIM"].triggerSpeed ~= 0 then
+		local leftTrigger, rightTrigger = self:CreateListTriggerKeybindDescriptors(self.itemList)
+		table.insert(self.itemFilterKeybindStripDescriptor, leftTrigger)
+		table.insert(self.itemFilterKeybindStripDescriptor, rightTrigger)
+	end
 
 	self.switchEquipKeybindDescriptor = {
             alignment = KEYBIND_STRIP_ALIGN_RIGHT,
@@ -1704,6 +1735,13 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
     }
 
     ZO_Gamepad_AddBackNavigationKeybindDescriptors(self.craftBagKeybindStripDescriptor, GAME_NAVIGATION_TYPE_BUTTON)
+	
+	if BUI.Settings.Modules["CIM"].triggerSpeed ~= 0 then
+		local leftTrigger, rightTrigger = self:CreateListTriggerKeybindDescriptors(self.craftBagList)
+		table.insert(self.craftBagKeybindStripDescriptor, leftTrigger)
+		table.insert(self.craftBagKeybindStripDescriptor, rightTrigger)
+	end
+	
 end
 
 local function BUI_TryPlaceInventoryItemInEmptySlot(targetBag)

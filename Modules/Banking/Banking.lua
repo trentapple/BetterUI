@@ -70,7 +70,7 @@ local DEFAULT_GAMEPAD_ITEM_SORT =
 }
 
 local function ItemSortFunc(data1, data2)
-     return ZO_TableOrderingFunction(data1, data2, "itemCategoryName", DEFAULT_GAMEPAD_ITEM_SORT, ZO_SORT_ORDER_UP)
+     return ZO_TableOrderingFunction(data1, data2, "itemCategoryName", DEFAULT_GAMEPAD_ITEM_SORT, ZO_SORT_ORDER_DOWN)
 end
 
 local function GetMarketPrice(itemLink, stackCount)
@@ -158,10 +158,32 @@ end
 function BUI.Banking.Class:RefreshFooter()
     self.footer.footer:GetNamedChild("DepositButtonSpaceLabel"):SetText(zo_strformat("|t24:24:/esoui/art/inventory/gamepad/gp_inventory_icon_all.dds|t <<1>>",zo_strformat(SI_GAMEPAD_INVENTORY_CAPACITY_FORMAT, GetNumBagUsedSlots(BAG_BACKPACK), GetBagSize(BAG_BACKPACK))))
     self.footer.footer:GetNamedChild("WithdrawButtonSpaceLabel"):SetText(zo_strformat("|t24:24:/esoui/art/icons/mapkey/mapkey_bank.dds|t <<1>>",zo_strformat(SI_GAMEPAD_INVENTORY_CAPACITY_FORMAT, GetNumBagUsedSlots(BAG_BANK), GetBagSize(BAG_BANK))))
+	
+	local bankSpaceIsFull = (GetNumBagUsedSlots(BAG_BANK) >= GetBagSize(BAG_BANK))
+	local bagSpaceIsFull = (GetNumBagUsedSlots(BAG_BACKPACK) >= GetBagSize(BAG_BACKPACK))
+
     if(self.currentMode == LIST_WITHDRAW) then
+	    self.footer.footer:GetNamedChild("WithdrawButtonSpaceLabel"):SetColor(1,1,1,1)
+	    self.footer.footer:GetNamedChild("DepositButtonSpaceLabel"):SetColor(0.26,0.26,0.26,1)
+	    if bankSpaceIsFull then
+		    self.footer.footer:GetNamedChild("WithdrawButtonSpaceLabel"):SetColor(1,0.00,0.00,1)
+	    end
+	    if bagSpaceIsFull then
+		    self.footer.footer:GetNamedChild("DepositButtonSpaceLabel"):SetColor(1,0.00,0.00,0.5)
+	    end
+	    
         self.footerFragment.control:GetNamedChild("Data1Value"):SetText(BUI.DisplayNumber(GetBankedCurrencyAmount(CURT_MONEY)))
         self.footerFragment.control:GetNamedChild("Data2Value"):SetText(BUI.DisplayNumber(GetBankedCurrencyAmount(CURT_TELVAR_STONES)))
     else
+	    self.footer.footer:GetNamedChild("WithdrawButtonSpaceLabel"):SetColor(0.26,0.26,0.26,1)
+	    self.footer.footer:GetNamedChild("DepositButtonSpaceLabel"):SetColor(1,1,1,1)
+	    if bankSpaceIsFull then
+		    self.footer.footer:GetNamedChild("WithdrawButtonSpaceLabel"):SetColor(1,0.00,0.00,0.5)
+	    end
+	    if bagSpaceIsFull then
+		    self.footer.footer:GetNamedChild("DepositButtonSpaceLabel"):SetColor(1,0.00,0.00,1)
+	    end
+	    
         self.footerFragment.control:GetNamedChild("Data1Value"):SetText(BUI.DisplayNumber(GetCarriedCurrencyAmount(CURT_MONEY)))
         self.footerFragment.control:GetNamedChild("Data2Value"):SetText(BUI.DisplayNumber(GetCarriedCurrencyAmount(CURT_TELVAR_STONES)))
     end
@@ -296,7 +318,6 @@ local function FindEmptySlotInBag(bagId)
     return nil
 end
 
-
 function BUI.Banking.Class:ActivateSpinner()
     self.spinner:SetHidden(false)
     self.spinner:Activate()
@@ -319,7 +340,6 @@ function BUI.Banking.Class:DeactivateSpinner()
         KEYBIND_STRIP:AddKeybindButtonGroup(self.coreKeybinds)
     end
 end
-
 
 function BUI.Banking.Class:MoveItem(list, quantity)
 	local bag, index = ZO_Inventory_GetBagAndIndex(list:GetSelectedData())
@@ -658,14 +678,33 @@ function BUI.Banking.Class:ToggleList(toWithdraw)
 
 	self.currentMode = toWithdraw and LIST_WITHDRAW or LIST_DEPOSIT
 	local footer = self.footer:GetNamedChild("Footer")
+	--[[local bankSpaceIsFull = (GetNumBagUsedSlots(BAG_BANK) >= GetBagSize(BAG_BANK))
+	local bagSpaceIsFull = (GetNumBagUsedSlots(BAG_BACKPACK) >= GetBagSize(BAG_BACKPACK))]]
 	if(self.currentMode == LIST_WITHDRAW) then
 		footer:GetNamedChild("SelectBg"):SetTextureRotation(0)
-
+		
+		--[[footer:GetNamedChild("WithdrawButtonSpaceLabel"):SetColor(1,1,1,1)
+		footer:GetNamedChild("DepositButtonSpaceLabel"):SetColor(0.26,0.26,0.26,1)
+		if bankSpaceIsFull then
+			footer:GetNamedChild("WithdrawButtonSpaceLabel"):SetColor(1,0.00,0.00,1)
+		end
+		if bagSpaceIsFull then
+			footer:GetNamedChild("DepositButtonSpaceLabel"):SetColor(1,0.00,0.00,0.5)
+		end]]
+		
 		footer:GetNamedChild("DepositButtonLabel"):SetColor(0.26,0.26,0.26,1)
 		footer:GetNamedChild("WithdrawButtonLabel"):SetColor(1,1,1,1)
 	else
 		footer:GetNamedChild("SelectBg"):SetTextureRotation(3.1415)
-
+		
+		--[[footer:GetNamedChild("WithdrawButtonSpaceLabel"):SetColor(0.26,0.26,0.26,1)
+		footer:GetNamedChild("DepositButtonSpaceLabel"):SetColor(1,1,1,1)
+		if bankSpaceIsFull then
+			footer:GetNamedChild("WithdrawButtonSpaceLabel"):SetColor(1,0.00,0.00,0.5)
+		end
+		if bagSpaceIsFull then
+			footer:GetNamedChild("DepositButtonSpaceLabel"):SetColor(1,0.00,0.00,1)
+		end]]
 		footer:GetNamedChild("DepositButtonLabel"):SetColor(1,1,1,1)
 		footer:GetNamedChild("WithdrawButtonLabel"):SetColor(0.26,0.26,0.26,1)
 	end
