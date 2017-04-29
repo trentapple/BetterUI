@@ -114,7 +114,11 @@ function BUI.GuildStore.Setup()
 
 	local function OnGameCameraDeactivated()
 		if noLockedCamera[GetInteractionType()] then
-			SetInteractionUsingInteractCamera(false)
+			local KIOSK_OPTION_INDEX = 1
+			local _, optionType = GetChatterOption(KIOSK_OPTION_INDEX)
+			if (optionType == CHATTER_START_TRADINGHOUSE) then
+				SetInteractionUsingInteractCamera(false)
+			end
 		end
 	end
 	EVENT_MANAGER:RegisterForEvent("PREVIEW_BUI_GS", EVENT_GAME_CAMERA_DEACTIVATED, OnGameCameraDeactivated)
