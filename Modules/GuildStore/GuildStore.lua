@@ -371,8 +371,8 @@ function BUI.GuildStore.HookResultsKeybinds()
 							--SetInteractionUsingInteractCamera(false)
 						
 							if SYSTEMS:IsShowing(ZO_TRADING_HOUSE_SYSTEM_NAME) or SYSTEMS:IsShowing("trade") then
-								PREVIEW:EnablePreviewMode(FRAME_TARGET_GAMEPAD_RIGHT_FRAGMENT)
-								--PREVIEW:EnablePreviewMode(FRAME_TARGET_GAMEPAD_FRAGMENT)
+								--PREVIEW:EnablePreviewMode(FRAME_TARGET_GAMEPAD_RIGHT_FRAGMENT)
+								PREVIEW:EnablePreviewMode(FRAME_TARGET_GAMEPAD_FRAGMENT)
 								--SetInteractionUsingInteractCamera(false)
 							elseif isFraming then
 								-- if there is already a frame fragment active, use the dummy one
