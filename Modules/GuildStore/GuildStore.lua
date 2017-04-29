@@ -358,8 +358,22 @@ function BUI.GuildStore.HookResultsKeybinds()
 							--[[if (FurPreview ~= nil) then
 								FurPreview:Preview(postedData, itemLink, postedData.slotType)
 							end]]--
+							--[[local SKIP_INTERACTION = {
+								[INTERACTION_CRAFT] = true,
+								[INTERACTION_DYE_STATION] = true,
+								[INTERACTION_LOCKPICK] = true,
+								[INTERACTION_SIEGE] = true,
+								[INTERACTION_FURNITURE] = true,
+							}]]
+							--if SKIP_INTERACTION[GetInteractionType()] then
+							--	return
+							--end
+							--SetInteractionUsingInteractCamera(false)
+						
 							if SYSTEMS:IsShowing(ZO_TRADING_HOUSE_SYSTEM_NAME) or SYSTEMS:IsShowing("trade") then
 								PREVIEW:EnablePreviewMode(FRAME_TARGET_GAMEPAD_RIGHT_FRAGMENT)
+								--PREVIEW:EnablePreviewMode(FRAME_TARGET_GAMEPAD_FRAGMENT)
+								--SetInteractionUsingInteractCamera(false)
 							elseif isFraming then
 								-- if there is already a frame fragment active, use the dummy one
 								PREVIEW:EnablePreviewMode(NO_TARGET_CHANGE_FRAME)

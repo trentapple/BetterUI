@@ -106,6 +106,18 @@ function BUI.GuildStore.Setup()
 
 	BUI.GuildStore.BrowseResults.Setup()
 	BUI.GuildStore.Listings.Setup()
+	
+	local noLockedCamera = {
+		[INTERACTION_TRADINGHOUSE] = true,
+		[14] = true
+	}
+
+	local function OnGameCameraDeactivated()
+		if noLockedCamera[GetInteractionType()] then
+			SetInteractionUsingInteractCamera(false)
+		end
+	end
+	EVENT_MANAGER:RegisterForEvent("PREVIEW_BUI_GS", EVENT_GAME_CAMERA_DEACTIVATED, OnGameCameraDeactivated)
 
 	if(BUI.Settings.Modules["GuildStore"].saveFilters) then
 
