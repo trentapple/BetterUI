@@ -847,8 +847,8 @@ end
 ZO_TRADING_HOUSE_YES_OR_NO_ANY =
 {
 	{ 1, nil, SI_GAMEPAD_SELECT_OPTION },
-	{ 2, nil, SI_YES },
-	{ 3, nil, SI_NO },
+	{ 2, nil, SI_ITEM_FORMAT_STR_UNKNOWN_RECIPE },
+	{ 3, nil, SI_RECIPE_ALREADY_KNOWN },
 	{ 4, nil, SI_LORE_LIBRARY_UNKNOWN_BOOK },
 }
 
@@ -943,9 +943,9 @@ function BUI.GuildStore.Browse:ResetList(filters, dontReselect)
     
     --self:AddDropDownEntry("BUI_BrowseFilterCheckboxTemplate", 5)
 
-    local dropDownData = ZO_GamepadEntryData:New("Unknown Recipes")
+    local dropDownData = ZO_GamepadEntryData:New("Only Unknown")
     dropDownData.dropDownMode = 5
-    dropDownData:SetHeader("Unknown Recipes")
+    dropDownData:SetHeader("Only Unknown")
     self.itemList:AddEntryWithHeader("ZO_GamepadGuildStoreComboUnknownRecipes", dropDownData)
     
     local nameFilter = ZO_GamepadEntryData:New("Name Filter")
