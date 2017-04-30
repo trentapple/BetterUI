@@ -632,7 +632,7 @@ function BUI.GuildStore.BrowseResults:AddEntryToList(itemData)
 		            isMotifAndUnknown = not IsItemLinkBookKnown(itemData.itemLink)
 	            end
 
-				if (self.recipeUnknownFilter == 2 and not isRecipeAndUnknown) or (self.recipeUnknownFilter == 3 and isRecipeAndUnknown) or (self.recipeUnknownFilter == 4 and isMotifAndUnknown) then
+				if (self.recipeUnknownFilter == 2 and not isRecipeAndUnknown) or (self.recipeUnknownFilter == 3 and isRecipeAndUnknown) or (self.recipeUnknownFilter == 4 and not isMotifAndUnknown) then
                 	return
             	end
             end
@@ -849,7 +849,7 @@ ZO_TRADING_HOUSE_YES_OR_NO_ANY =
 	{ 1, nil, SI_GAMEPAD_SELECT_OPTION },
 	{ 2, nil, SI_ITEM_FORMAT_STR_UNKNOWN_RECIPE },
 	{ 3, nil, SI_RECIPE_ALREADY_KNOWN },
-	{ 4, nil, _G[zo_strformat(("SI_ITEMTYPE<<1>>", ITEMTYPE_RACIAL_STYLE_MOTIF)] }, --GetString("SI_ITEMTYPE", ITEMTYPE_RACIAL_STYLE_MOTIF)
+	{ 4, nil, SI_ITEMTYPE8 }, --GetString("SI_ITEMTYPE", ITEMTYPE_RACIAL_STYLE_MOTIF)
 }
 
 function BUI.GuildStore.Browse:PopulateUnknownRecipesDropDown(dropDown)
