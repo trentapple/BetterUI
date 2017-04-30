@@ -45,7 +45,7 @@ local SORT_OPTIONS = {
     [ZO_GamepadTradingHouse_SortableItemList.SORT_KEY_PRICE] = TRADING_HOUSE_SORT_SALE_PRICE,
 }
 
-local GUILDSTORE_LEFT_TOOL_TIP_REFRESH_DELAY_MS = 200
+local GUILDSTORE_LEFT_TOOL_TIP_REFRESH_DELAY_MS = 150
 
 local USE_SHORT_CURRENCY_FORMAT = true
 
@@ -75,8 +75,11 @@ function BUI_GamepadInventoryList:RefreshList()
 			
 			local currentItemType = GetItemLinkItemType(itemData) --GetItemType(bagId, slotIndex)
 			local isRecipeAndUnknown = false
+			local isMotifAndUnknown = false
 			if (currentItemType == ITEMTYPE_RECIPE) then
 				isRecipeAndUnknown = not IsItemLinkRecipeKnown(itemData)
+			elseif (currentItemType == ITEMTYPE_RACIAL_STYLE_MOTIF) then
+				isMotifAndUnknown = not IsItemLinkBookKnown(itemData)
 			end
 			
 			local isUnbound = not IsItemBound(bagId, slotIndex) and not data.stolen and data.quality ~= ITEM_QUALITY_TRASH
@@ -85,6 +88,7 @@ function BUI_GamepadInventoryList:RefreshList()
 			if(hasEnchantment) then fullItemName = fullItemName.." |t16:16:/BetterUI/Modules/Inventory/Images/inv_enchanted.dds|t" end
 			if(setItem) then fullItemName = fullItemName.." |t16:16:/BetterUI/Modules/Inventory/Images/inv_setitem.dds|t" end
 			if isRecipeAndUnknown then fullItemName = fullItemName.." |t16:16:/esoui/art/inventory/gamepad/gp_inventory_icon_craftbag_provisioning.dds|t" end
+			if isMotifAndUnknown then fullItemName = fullItemName.." |t16:16:/esoui/art/inventory/gamepad/gp_inventory_icon_craftbag_blacksmithing.dds|t" end
 		end
 		
 		return fullItemName
@@ -133,13 +137,17 @@ local function BUI_SharedGamepadEntryLabelSetup(label, stackLabel, data, selecte
 
             local currentItemType = GetItemLinkItemType(itemData)
             local isRecipeAndUnknown = false
+            local isMotifAndUnknown = false
             if (currentItemType == ITEMTYPE_RECIPE) then
                 isRecipeAndUnknown = not IsItemLinkRecipeKnown(itemData)
+            elseif (currentItemType == ITEMTYPE_RACIAL_STYLE_MOTIF) then
+	            isMotifAndUnknown = not IsItemLinkBookKnown(itemData)
             end
             
             if(hasEnchantment) then labelTxt = labelTxt.." |t16:16:/BetterUI/Modules/Inventory/Images/inv_enchanted.dds|t" end
             if(setItem) then labelTxt = labelTxt.." |t16:16:/BetterUI/Modules/Inventory/Images/inv_setitem.dds|t" end
             if isRecipeAndUnknown then labelTxt = labelTxt.." |t16:16:/esoui/art/inventory/gamepad/gp_inventory_icon_craftbag_provisioning.dds|t" end
+	        if isMotifAndUnknown then labelTxt = labelTxt.." |t16:16:/esoui/art/inventory/gamepad/gp_inventory_icon_craftbag_blacksmithing.dds|t" end
         end
 
         label:SetText(labelTxt)
@@ -608,18 +616,23 @@ end
 function BUI.GuildStore.BrowseResults:AddEntryToList(itemData)
     if(itemData) then
         -- filter by name logic
-        if(self.textFilter ~= nil) then
+        if(self.textFilter ~= nil and self.textFilter ~= "") then
             if(string.find(string.lower(itemData.name), self.textFilter, 1, true) == nil ) then
                 return
             end
         end
 		if(self.recipeUnknownFilter ~= nil) then
 			local currentItemType = GetItemLinkItemType(itemData.itemLink)
-            local isRecipeAndUnknown = false
-            if (currentItemType == ITEMTYPE_RECIPE) then
-                isRecipeAndUnknown = not IsItemLinkRecipeKnown(itemData.itemLink)
+            if (currentItemType == ITEMTYPE_RECIPE or currentItemType == ITEMTYPE_RACIAL_STYLE_MOTIF) then
+	            local isRecipeAndUnknown = false
+	            local isMotifAndUnknown = false
+		        if (currentItemType == ITEMTYPE_RECIPE) then
+	                isRecipeAndUnknown = not IsItemLinkRecipeKnown(itemData.itemLink)
+	            elseif (currentItemType == ITEMTYPE_RACIAL_STYLE_MOTIF) then
+		            isMotifAndUnknown = not IsItemLinkBookKnown(itemData.itemLink)
+	            end
 
-				if (self.recipeUnknownFilter == 2 and not isRecipeAndUnknown) or (self.recipeUnknownFilter == 3 and isRecipeAndUnknown) then
+				if (self.recipeUnknownFilter == 2 and not isRecipeAndUnknown) or (self.recipeUnknownFilter == 3 and isRecipeAndUnknown) or (self.recipeUnknownFilter == 4 and isMotifAndUnknown) then
                 	return
             	end
             end
@@ -766,11 +779,30 @@ function BUI.GuildStore.Sell:InitializeList()
 		self.callLaterLeftToolTip = "CallLaterFunction"..callLaterId
     end
 
-    local USE_TRIGGERS = true
-    local SORT_FUNCTION = nil
-    local CATEGORIZATION_FUNCTION = nil
+    local USE_TRIGGERS = (tonumber(BUI.Settings.Modules["CIM"].triggerSpeed) == 0) or true
+    local SORT_FUNCTION = ZO_GamepadInventory_DefaultItemSortComparator
+    local CATEGORIZATION_FUNCTION = ZO_InventoryUtils_Gamepad_GetBestItemCategoryDescription
     local ENTRY_SETUP_CALLBACK = nil
     local LISTINGS_ITEM_HEIGHT = 30
+	
+	--[[if tonumber(BUI.Settings.Modules["CIM"].triggerSpeed) ~= 0 then
+		self.keybindStripDescriptor[#self.keybindStripDescriptor+1] = {
+			keybind = "UI_SHORTCUT_LEFT_TRIGGER",
+			ethereal = true,
+			callback = function()
+				local selectedIndex = self.list.selectedIndex or self.list:GetSelectedIndex() or 1
+				self.list:SetSelectedIndex(selectedIndex-tonumber(BUI.Settings.Modules["CIM"].triggerSpeed))
+			end,
+		}
+		self.keybindStripDescriptor[#self.keybindStripDescriptor+1] = {
+			keybind = "UI_SHORTCUT_RIGHT_TRIGGER",
+			ethereal = true,
+			callback = function()
+				local selectedIndex = self.list.selectedIndex or self.list:GetSelectedIndex() or 1
+				self.list:SetSelectedIndex(selectedIndex+tonumber(BUI.Settings.Modules["CIM"].triggerSpeed))
+			end,
+		}
+	end]]
 
     self.messageControl = self.control:GetNamedChild("StatusMessage")
     self.itemList = BUI_GamepadInventoryList:New(self.listControl, BAG_BACKPACK, SLOT_TYPE_ITEM, OnSelectionChanged, ENTRY_SETUP_CALLBACK, CATEGORIZATION_FUNCTION, SORT_FUNCTION, USE_TRIGGERS, "BUI_Sell_Row", SetupSellListing)
@@ -817,6 +849,7 @@ ZO_TRADING_HOUSE_YES_OR_NO_ANY =
 	{ 1, nil, SI_GAMEPAD_SELECT_OPTION },
 	{ 2, nil, SI_YES },
 	{ 3, nil, SI_NO },
+	{ 4, nil, SI_LORE_LIBRARY_UNKNOWN_BOOK },
 }
 
 function BUI.GuildStore.Browse:PopulateUnknownRecipesDropDown(dropDown)

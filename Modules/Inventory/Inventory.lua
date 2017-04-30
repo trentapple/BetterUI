@@ -17,7 +17,7 @@ local CRAFT_BAG_TAB_INDEX = 2
 
 local DIALOG_QUEUE_WORKAROUND_TIMEOUT_DURATION = 300
 
-local INVENTORY_LEFT_TOOL_TIP_REFRESH_DELAY_MS = 200
+local INVENTORY_LEFT_TOOL_TIP_REFRESH_DELAY_MS = 150
 
 local INVENTORY_CATEGORY_LIST = "categoryList"
 local INVENTORY_ITEM_LIST = "itemList"
@@ -895,11 +895,11 @@ function BUI.Inventory.Class:ActionsDialogSetup(dialog)
 
     --ZO_ClearTable(parametricList)
     if(BUI.Settings.Modules["Inventory"].enableJunk) then
-        if(self.categoryList:GetTargetData().showJunk ~= nil) then
+        --[[if(self.categoryList:GetTargetData().showJunk ~= nil) then
             self.itemActions.slotActions.m_slotActions[#self.itemActions.slotActions.m_slotActions+1] = {"Unmark as Junk", UnmarkAsJunk, "secondary"}
         else
             self.itemActions.slotActions.m_slotActions[#self.itemActions.slotActions.m_slotActions+1] = {"Mark as Junk", MarkAsJunk, "secondary"}
-        end
+        end]]
     end
 
     --self:RefreshItemActions()
@@ -983,7 +983,14 @@ function BUI.Inventory.Class:InitializeActionsDialog()
                         --Also perform bag stack!
                         --StackBag(BAG_BACKPACK)
                         --link in chat
-                        local targetData = self.itemList:GetTargetData()
+                        local targetData
+	                    local currentList = self:GetCurrentList()
+                        if currentList == self.craftBagList then
+	                        targetData = self.craftBagList:GetTargetData()
+                        else
+	                        targetData = self.itemList:GetTargetData()
+                        end
+                        
                         local itemLink
                         local bag, slot = ZO_Inventory_GetBagAndIndex(targetData)
                         if bag and slot then
@@ -1140,7 +1147,7 @@ function BUI.Inventory.Class:OnDeferredInitialize()
     }
     self.savedVars = ZO_SavedVars:NewAccountWide("ZO_Ingame_SavedVariables", 2, "GamepadInventory", SAVED_VAR_DEFAULTS)
 
-    self:SetListsUseTriggerKeybinds((BUI.Settings.Modules["CIM"].triggerSpeed == 0))
+    self:SetListsUseTriggerKeybinds((tonumber(BUI.Settings.Modules["CIM"].triggerSpeed) == 0))
 	
     self.categoryPositions = {}
 	self.categoryCraftPositions = {}
@@ -1416,7 +1423,45 @@ function BUI.Inventory.Class:CreateListTriggerKeybindDescriptors(list)
 		callback = function()
 			--local list = self.list
 			--if not list:IsEmpty() then
-				list:SetSelectedIndex(list.selectedIndex-tonumber(BUI.Settings.Modules["CIM"].triggerSpeed))
+				--local selectedIndex = list.selectedIndex
+			--[[local isItemList = (self:GetCurrentList() == self.itemList)
+			local lastPosition
+			
+			if isItemList then
+				lastPosition = self.categoryPositions[self.categoryList.selectedIndex]
+			else
+				lastPosition = self.categoryCraftPositions[self.categoryList.selectedIndex]
+			end
+			
+			local selectedIndex = lastPosition
+			if selectedIndex == nil then
+				selectedIndex = 1
+			end
+			lastPosition = selectedIndex-tonumber(BUI.Settings.Modules["CIM"].triggerSpeed)
+		
+			if lastPosition ~= nil and self._currentList.dataList ~= nil then
+				lastPosition = (#self._currentList.dataList > lastPosition) and lastPosition or #self._currentList.dataList
+			end
+			
+			if lastPosition < 1 then
+				lastPosition = 1
+			end
+			
+			list:SetSelectedIndex(lastPosition)
+			
+			if isItemList then
+				self.categoryPositions[self.categoryList.selectedIndex] = lastPosition
+			else
+				self.categoryCraftPositions[self.categoryList.selectedIndex] = list.list:GetSelectedIndex() or lastPosition
+			end]]
+			
+			local selectedIndex = list.selectedIndex or list.list:GetSelectedIndex() or 1
+			list:SetSelectedIndex(selectedIndex-tonumber(BUI.Settings.Modules["CIM"].triggerSpeed))
+				
+				
+				--self:SaveListPosition()
+		
+				--list.selectedIndex = newSelectedIndex
 			--end
 		end
 	}
@@ -1426,7 +1471,43 @@ function BUI.Inventory.Class:CreateListTriggerKeybindDescriptors(list)
 		callback = function()
 			--local list = self.list
 			--if not list:IsEmpty() then
-				list:SetSelectedIndex(list.selectedIndex+tonumber(BUI.Settings.Modules["CIM"].triggerSpeed))
+			--[[local isItemList = (self:GetCurrentList() == self.itemList)
+			local lastPosition
+			
+			if isItemList then
+				lastPosition = self.categoryPositions[self.categoryList.selectedIndex]
+			else
+				lastPosition = self.categoryCraftPositions[self.categoryList.selectedIndex]
+			end
+			
+			local selectedIndex = lastPosition
+			if selectedIndex == nil then
+				selectedIndex = 1
+			end
+			lastPosition = selectedIndex+tonumber(BUI.Settings.Modules["CIM"].triggerSpeed)
+			
+			if lastPosition ~= nil and self._currentList.dataList ~= nil then
+				lastPosition = (#self._currentList.dataList > lastPosition) and lastPosition or #self._currentList.dataList
+			end
+			
+			if lastPosition < 1 then
+				lastPosition = 1
+			end
+			
+			list:SetSelectedIndex(lastPosition)
+		
+			if isItemList then
+				self.categoryPositions[self.categoryList.selectedIndex] = lastPosition
+			else
+				self.categoryCraftPositions[self.categoryList.selectedIndex] = list.list:GetSelectedIndex() or lastPosition
+			end]]
+			
+			local selectedIndex = list.selectedIndex or list.list:GetSelectedIndex() or 1
+			list:SetSelectedIndex(selectedIndex+tonumber(BUI.Settings.Modules["CIM"].triggerSpeed))
+			
+			--self:SaveListPosition()
+		
+			--list.selectedIndex = newSelectedIndex
 			--end
 		end,
 	}
@@ -1606,7 +1687,7 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
 
     ZO_Gamepad_AddBackNavigationKeybindDescriptors(self.itemFilterKeybindStripDescriptor, GAME_NAVIGATION_TYPE_BUTTON)
 	
-	if BUI.Settings.Modules["CIM"].triggerSpeed ~= 0 then
+	if tonumber(BUI.Settings.Modules["CIM"].triggerSpeed) ~= 0 then
 		local leftTrigger, rightTrigger = self:CreateListTriggerKeybindDescriptors(self.itemList)
 		table.insert(self.itemFilterKeybindStripDescriptor, leftTrigger)
 		table.insert(self.itemFilterKeybindStripDescriptor, rightTrigger)
@@ -1736,7 +1817,7 @@ function BUI.Inventory.Class:InitializeKeybindStrip()
 
     ZO_Gamepad_AddBackNavigationKeybindDescriptors(self.craftBagKeybindStripDescriptor, GAME_NAVIGATION_TYPE_BUTTON)
 	
-	if BUI.Settings.Modules["CIM"].triggerSpeed ~= 0 then
+	if tonumber(BUI.Settings.Modules["CIM"].triggerSpeed) ~= 0 then
 		local leftTrigger, rightTrigger = self:CreateListTriggerKeybindDescriptors(self.craftBagList)
 		table.insert(self.craftBagKeybindStripDescriptor, leftTrigger)
 		table.insert(self.craftBagKeybindStripDescriptor, rightTrigger)
@@ -1747,7 +1828,7 @@ end
 local function BUI_TryPlaceInventoryItemInEmptySlot(targetBag)
     local emptySlotIndex = FindFirstEmptySlotInBag(targetBag)
     if emptySlotIndex ~= nil then
-        CallSecureProtected("PlaceInInventory",targetBag, emptySlotIndex)
+        CallSecureProtected("PlaceInInventory", targetBag, emptySlotIndex)
     else
         local errorStringId = (targetBag == BAG_BACKPACK) and SI_INVENTORY_ERROR_INVENTORY_FULL or SI_INVENTORY_ERROR_BANK_FULL
         ZO_Alert(UI_ALERT_CATEGORY_ERROR, SOUNDS.NEGATIVE_CLICK, errorStringId)

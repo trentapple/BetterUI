@@ -173,8 +173,11 @@ function BUI_SharedGamepadEntryLabelSetup(label, data, selected)
 
             local currentItemType = GetItemLinkItemType(itemData) --GetItemType(bagId, slotIndex)
             local isRecipeAndUnknown = false
+            local isMotifAndUnknown = false
             if (currentItemType == ITEMTYPE_RECIPE) then
                 isRecipeAndUnknown = not IsItemLinkRecipeKnown(itemData)
+            elseif (currentItemType == ITEMTYPE_RACIAL_STYLE_MOTIF) then
+	            isMotifAndUnknown = not IsItemLinkBookKnown(itemData)
 			end
 	
 			local isUnbound = not IsItemBound(bagId, slotIndex) and not data.stolen and data.quality ~= ITEM_QUALITY_TRASH
@@ -187,6 +190,7 @@ function BUI_SharedGamepadEntryLabelSetup(label, data, selected)
             --if hasEnchantment then labelTxt = labelTxt.." |t16:16:/BetterUI/Modules/Inventory/Images/inv_enchanted.dds|t" end
             --if setItem then labelTxt = labelTxt.." |t16:16:/BetterUI/Modules/Inventory/Images/inv_setitem.dds|t" end
             if isRecipeAndUnknown then labelTxt = labelTxt.." |t16:16:/esoui/art/inventory/gamepad/gp_inventory_icon_craftbag_provisioning.dds|t" end
+	        if isMotifAndUnknown then labelTxt = labelTxt.." |t16:16:/esoui/art/inventory/gamepad/gp_inventory_icon_craftbag_blacksmithing.dds|t" end
         end
 
         label:SetText(labelTxt)
