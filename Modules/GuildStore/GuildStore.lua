@@ -807,7 +807,7 @@ function BUI.GuildStore.Sell:InitializeList()
     self.messageControl = self.control:GetNamedChild("StatusMessage")
     self.itemList = BUI_GamepadInventoryList:New(self.listControl, BAG_BACKPACK, SLOT_TYPE_ITEM, OnSelectionChanged, ENTRY_SETUP_CALLBACK, CATEGORIZATION_FUNCTION, SORT_FUNCTION, USE_TRIGGERS, "BUI_Sell_Row", SetupSellListing)
     self.itemList:SetItemFilterFunction(function(slot) local isBound = IsItemBound(slot.bagId, slot.slotIndex)
-                                                    return slot.quality ~= ITEM_QUALITY_TRASH and not slot.stolen and not isBound end)
+                                                    return slot.quality ~= ITEM_QUALITY_TRASH and not slot.stolen and not isBound and not slot.isPlayerLocked end)
 
     self.itemList:GetParametricList():SetAlignToScreenCenter(true, LISTINGS_ITEM_HEIGHT)
 
@@ -849,7 +849,7 @@ ZO_TRADING_HOUSE_YES_OR_NO_ANY =
 	{ 1, nil, SI_GAMEPAD_SELECT_OPTION },
 	{ 2, nil, SI_ITEM_FORMAT_STR_UNKNOWN_RECIPE },
 	{ 3, nil, SI_RECIPE_ALREADY_KNOWN },
-	{ 4, nil, SI_LORE_LIBRARY_UNKNOWN_BOOK },
+	{ 4, nil, GetString("SI_ITEMTYPE", ITEMTYPE_RACIAL_STYLE_MOTIF) },
 }
 
 function BUI.GuildStore.Browse:PopulateUnknownRecipesDropDown(dropDown)
