@@ -124,7 +124,7 @@ local function SetupListing(control, data)
         if(hasEnchantment) then fullItemName = fullItemName.." |t16:16:/BetterUI/Modules/Inventory/Images/inv_enchanted.dds|t" end
         if(setItem) then fullItemName = fullItemName.." |t16:16:/BetterUI/Modules/Inventory/Images/inv_setitem.dds|t" end
 		if isRecipeAndUnknown then fullItemName = fullItemName.." |t16:16:/esoui/art/inventory/gamepad/gp_inventory_icon_craftbag_provisioning.dds|t" end
-	    if isMotifAndUnknown then fullItemName = fullItemName.." |t16:16:/esoui/art/inventory/gamepad/gp_inventory_icon_craftbag_blacksmithing.dds|t" end
+	    if isMotifAndUnknown then fullItemName = fullItemName.." |t16:16:/esoui/art/inventory/gamepad/gp_inventory_icon_craftbag_itemtrait.dds|t" end
     end
     control:GetNamedChild("ItemType"):SetText(string.upper(data.itemCategoryName))
     control:GetNamedChild("Stat"):SetText((data.statValue == 0) and "-" or data.statValue)
