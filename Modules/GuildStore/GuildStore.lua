@@ -938,11 +938,6 @@ function BUI.GuildStore.Browse:ResetList(filters, dontReselect)
     self:AddDropDownEntry("GuildStoreBrowseCategory", CATEGORY_DROP_DOWN_MODE)
     self:InitializeFilterData(filters)
 
-	--local recipeUnknownFilter = ZO_GamepadEntryData:New("Unknown Recipes")
-    --self.itemList:AddEntry("BUI_BrowseFilterCheckboxTemplate", recipeUnknownFilter)
-    
-    --self:AddDropDownEntry("BUI_BrowseFilterCheckboxTemplate", 5)
-
     local dropDownData = ZO_GamepadEntryData:New("Only Unknown")
     dropDownData.dropDownMode = 5
     dropDownData:SetHeader("Only Unknown")
