@@ -17,7 +17,7 @@ local CRAFT_BAG_TAB_INDEX = 2
 
 local DIALOG_QUEUE_WORKAROUND_TIMEOUT_DURATION = 300
 
-local INVENTORY_LEFT_TOOL_TIP_REFRESH_DELAY_MS = 200
+local INVENTORY_LEFT_TOOL_TIP_REFRESH_DELAY_MS = 150
 
 local INVENTORY_CATEGORY_LIST = "categoryList"
 local INVENTORY_ITEM_LIST = "itemList"
@@ -155,7 +155,7 @@ function BUI.Inventory.Class:ToSavedPosition()
     end
 
 	if(BUI.Settings.Modules["Inventory"].savePosition) then
-		local lastPosition
+		local lastPosition = 1
 
 		if self:GetCurrentList() == self.itemList then
 			lastPosition = self.categoryPositions[self.categoryList.selectedIndex]

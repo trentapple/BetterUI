@@ -45,7 +45,7 @@ local SORT_OPTIONS = {
     [ZO_GamepadTradingHouse_SortableItemList.SORT_KEY_PRICE] = TRADING_HOUSE_SORT_SALE_PRICE,
 }
 
-local GUILDSTORE_LEFT_TOOL_TIP_REFRESH_DELAY_MS = 200
+local GUILDSTORE_LEFT_TOOL_TIP_REFRESH_DELAY_MS = 150
 
 local USE_SHORT_CURRENCY_FORMAT = true
 
@@ -567,11 +567,11 @@ function BUI.GuildStore.BrowseResults:BuildList()
 						if GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.hasMorePages and GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS:HasNoCooldown() and not GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.control:IsHidden() then
 							TRADING_HOUSE_GAMEPAD:SearchNextPage()
 						end
-					end, GetTradingHouseCooldownRemaining() + 250)
+					end, GetTradingHouseCooldownRemaining() + 150)
 					self.nextPageCallLater = "NextPageCallLater"..nextCallLaterId
 					self.innerCallLaterIdIsSet = true
 				end
-			end, GetTradingHouseCooldownRemaining() + 100)
+			end, GetTradingHouseCooldownRemaining() + 50)
 		
 			if (not self.innerCallLaterIdIsSet) then
 				self.nextPageCallLater = "NextPageCallLater"..nextCallLaterId
@@ -959,9 +959,24 @@ function BUI.GuildStore.Browse:ResetList(filters, dontReselect)
 end
 
 function BUI.GuildStore.BrowseResults:InitializeSortOptions()
+	-- Added:
+	self.initialSortKey = ZO_GamepadTradingHouse_SortableItemList.SORT_KEY_TIME
+	
 	self.currentTimePriceKey = ZO_GamepadTradingHouse_SortableItemList.SORT_KEY_TIME
 	self.toggleTimePriceKey = ZO_GamepadTradingHouse_SortableItemList.SORT_KEY_PRICE
 	self:SetSortOptions(SORT_OPTIONS)
+end
+
+function BUI.GuildStore.BrowseResults:ResetSortOptions()
+	if self.currentTimePriceKey ~= ZO_GamepadTradingHouse_SortableItemList.SORT_KEY_TIME then
+		self:ToggleSortOptions()
+	end
+end
+
+function BUI.GuildStore.BrowseResults:SelectInitialSortOption()
+	if ZO_GamepadTradingHouse_SortableItemList.SORT_KEY_TIME then
+		self:SelectAndResetSortForKey(ZO_GamepadTradingHouse_SortableItemList.SORT_KEY_TIME)
+	end
 end
 
 function BUI.GuildStore.BrowseResults.Setup()
@@ -998,6 +1013,8 @@ function BUI.GuildStore.BrowseResults.Setup()
 	GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.RefreshFooter = BUI.GuildStore.BrowseResults.RefreshFooter
 	GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.InitializeFooter = BUI.GuildStore.BrowseResults.InitializeFooter
 	GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.InitializeSortOptions = BUI.GuildStore.BrowseResults.InitializeSortOptions
+	GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.ResetSortOptions = BUI.GuildStore.BrowseResults.ResetSortOptions
+	GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.SelectInitialSortOption = BUI.GuildStore.BrowseResults.SelectInitialSortOption
 	--GAMEPAD_TRADING_HOUSE_BROWSE_RESULTS.Initialize = BUI.GuildStore.BrowseResults.Initialize
 	
 	--EVENT_MANAGER:RegisterForEvent("BUI_OnSearchResultsReceived",
