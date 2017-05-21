@@ -45,7 +45,7 @@ local SORT_OPTIONS = {
     [ZO_GamepadTradingHouse_SortableItemList.SORT_KEY_PRICE] = TRADING_HOUSE_SORT_SALE_PRICE,
 }
 
-local GUILDSTORE_LEFT_TOOL_TIP_REFRESH_DELAY_MS = 150
+local GUILDSTORE_LEFT_TOOL_TIP_REFRESH_DELAY_MS = 200
 
 local USE_SHORT_CURRENCY_FORMAT = true
 
@@ -779,35 +779,37 @@ function BUI.GuildStore.Sell:InitializeList()
 		self.callLaterLeftToolTip = "CallLaterFunction"..callLaterId
     end
 
-    local USE_TRIGGERS = (tonumber(BUI.Settings.Modules["CIM"].triggerSpeed) == 0) or true
-    local SORT_FUNCTION = ZO_GamepadInventory_DefaultItemSortComparator
-    local CATEGORIZATION_FUNCTION = ZO_InventoryUtils_Gamepad_GetBestItemCategoryDescription
+    local USE_TRIGGERS = (tonumber(BUI.Settings.Modules["CIM"].triggerSpeed) == 0) or false
+	local SORT_FUNCTION = nil
+	local CATEGORIZATION_FUNCTION = nil
+	--local SORT_FUNCTION = ZO_GamepadInventory_DefaultItemSortComparator
+    --local CATEGORIZATION_FUNCTION = ZO_InventoryUtils_Gamepad_GetBestItemCategoryDescription
     local ENTRY_SETUP_CALLBACK = nil
     local LISTINGS_ITEM_HEIGHT = 30
+
+    self.messageControl = self.control:GetNamedChild("StatusMessage")
+    self.itemList = BUI_GamepadInventoryList:New(self.listControl, BAG_BACKPACK, SLOT_TYPE_ITEM, OnSelectionChanged, ENTRY_SETUP_CALLBACK, CATEGORIZATION_FUNCTION, SORT_FUNCTION, USE_TRIGGERS, "BUI_Sell_Row", SetupSellListing)
+    self.itemList:SetItemFilterFunction(function(slot) local isBound = IsItemBound(slot.bagId, slot.slotIndex)
+                                                    return (slot.quality ~= ITEM_QUALITY_TRASH and not slot.stolen and not isBound and not slot.isPlayerLocked) end)
 	
-	--[[if tonumber(BUI.Settings.Modules["CIM"].triggerSpeed) ~= 0 then
+	if tonumber(BUI.Settings.Modules["CIM"].triggerSpeed) ~= 0 then
 		self.keybindStripDescriptor[#self.keybindStripDescriptor+1] = {
 			keybind = "UI_SHORTCUT_LEFT_TRIGGER",
 			ethereal = true,
 			callback = function()
-				local selectedIndex = self.list.selectedIndex or self.list:GetSelectedIndex() or 1
-				self.list:SetSelectedIndex(selectedIndex-tonumber(BUI.Settings.Modules["CIM"].triggerSpeed))
+				local selectedIndex = self.itemList:GetParametricList().selectedIndex or self.itemList:GetParametricList():GetSelectedIndex() or 1
+				self.itemList:GetParametricList():SetSelectedIndex(selectedIndex-tonumber(BUI.Settings.Modules["CIM"].triggerSpeed))
 			end,
 		}
 		self.keybindStripDescriptor[#self.keybindStripDescriptor+1] = {
 			keybind = "UI_SHORTCUT_RIGHT_TRIGGER",
 			ethereal = true,
 			callback = function()
-				local selectedIndex = self.list.selectedIndex or self.list:GetSelectedIndex() or 1
-				self.list:SetSelectedIndex(selectedIndex+tonumber(BUI.Settings.Modules["CIM"].triggerSpeed))
+				local selectedIndex = self.itemList:GetParametricList().selectedIndex or self.itemList:GetParametricList():GetSelectedIndex() or 1
+				self.itemList:GetParametricList():SetSelectedIndex(selectedIndex+tonumber(BUI.Settings.Modules["CIM"].triggerSpeed))
 			end,
 		}
-	end]]
-
-    self.messageControl = self.control:GetNamedChild("StatusMessage")
-    self.itemList = BUI_GamepadInventoryList:New(self.listControl, BAG_BACKPACK, SLOT_TYPE_ITEM, OnSelectionChanged, ENTRY_SETUP_CALLBACK, CATEGORIZATION_FUNCTION, SORT_FUNCTION, USE_TRIGGERS, "BUI_Sell_Row", SetupSellListing)
-    self.itemList:SetItemFilterFunction(function(slot) local isBound = IsItemBound(slot.bagId, slot.slotIndex)
-                                                    return slot.quality ~= ITEM_QUALITY_TRASH and not slot.stolen and not isBound and not slot.isPlayerLocked end)
+	end
 
     self.itemList:GetParametricList():SetAlignToScreenCenter(true, LISTINGS_ITEM_HEIGHT)
 
